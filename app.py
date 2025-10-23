@@ -19,7 +19,7 @@ auth_service = AuthService()
 
 initialize_firebase()
 
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/*": {"origins": "https://artizon-ui.onrender.com"}})
 
 def auth_required(f):
     @wraps(f)
