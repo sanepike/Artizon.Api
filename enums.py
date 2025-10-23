@@ -1,7 +1,7 @@
 from enum import Enum
 
 class UserTypeEnum(str, Enum):
-    BUYER = "buyer"
+    CUSTOMER = "customer"
     VENDOR = "vendor"
 
     def __str__(self) -> str:
