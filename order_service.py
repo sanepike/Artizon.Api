@@ -109,3 +109,48 @@ def create_order_response(order: Order) -> OrderResponse:
         status=order.status,
         created_at_utc=order.created_at_utc
     )
+
+def update_order_status(db: Session, order_id: int, new_status: str, user_id: int, user_type: str) -> OrderResponse:
+    """
+    Update the status of an order.
+    - Vendors can only update orders containing their products
+    - Customers can only cancel their own orders
+    """
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise ValueError(f'Order with ID {order_id} not found')
+    
+    # Check permissions based on user type
+    if user_type == 'vendor':
+        # Vendor can only update orders containing their products
+        vendor_product_ids = db.query(Product.id).filter(Product.owner_id == user_id).all()
+        vendor_product_ids = [p[0] for p in vendor_product_ids]
+        
+        order_product_ids = [item.product_id for item in order.items]
+        has_vendor_products = any(pid in vendor_product_ids for pid in order_product_ids)
+        
+        if not has_vendor_products:
+            raise ValueError('You do not have permission to update this order')
+    
+    elif user_type == 'buyer' or user_type == 'customer':
+        # Customer can only update their own orders
+        if order.customer_id != user_id:
+            raise ValueError('You can only update your own orders')
+        
+        # Customers can only cancel orders
+        if new_status.upper() != 'CANCELLED':
+            raise ValueError('Customers can only cancel orders')
+    
+    else:
+        raise ValueError('Invalid user type')
+    
+    # Validate status
+    valid_statuses = ['PLACED', 'SHIPPED', 'DELIVERED', 'CANCELLED']
+    if new_status.upper() not in valid_statuses:
+        raise ValueError(f'Invalid status. Must be one of: {", ".join(valid_statuses)}')
+    
+    order.status = new_status.upper()
+    db.commit()
+    db.refresh(order)
+    
+    return create_order_response(order)

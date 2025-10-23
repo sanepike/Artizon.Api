@@ -6,7 +6,8 @@ from auth import AuthService
 from product_service import ProductService
 from contracts import (
     SignupRequest, LoginRequest, VerifyEmailRequest, ResendEmailVerificationTokenRequest,
-    CreateProductRequest, ProductListRequest, PlaceOrderRequest, OrderListRequest
+    CreateProductRequest, ProductListRequest, PlaceOrderRequest, OrderListRequest,
+    UpdateOrderStatusRequest
 )
 from sqlalchemy.orm import Session
 from models import engine
@@ -229,6 +230,28 @@ def get_my_orders(payload):
             })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/orders/<int:order_id>/status', methods=['PATCH'])
+@auth_required
+def update_order_status(payload, order_id):
+    try:
+        request_data = UpdateOrderStatusRequest(**request.json)
+        user_id = int(payload['sub'])
+        
+        with Session(engine) as db:
+            from models import User
+            user = db.get(User, user_id)
+            if not user:
+                return jsonify({'error': 'User not found'}), 404
+            
+            from order_service import update_order_status as update_order_status_service
+            result = update_order_status_service(db, order_id, request_data.status, user_id, user.user_type)
+            
+        return jsonify(result.dict())
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/')
 def home():

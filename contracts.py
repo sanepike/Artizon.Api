@@ -112,3 +112,13 @@ class OrderListResponse(BaseModel):
 class OrderListRequest(BaseModel):
     page: int = Field(default=1, ge=1, description="Page number for pagination")
     limit: int = Field(default=10, ge=1, le=100, description="Number of items per page")
+
+class UpdateOrderStatusRequest(BaseModel):
+    status: str = Field(..., description="New status for the order (PLACED, SHIPPED, DELIVERED, CANCELLED)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "status": "SHIPPED"
+            }
+        }
