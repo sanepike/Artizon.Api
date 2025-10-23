@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from firebase_config import initialize_firebase
 from models import init_db
 from auth import AuthService
@@ -16,6 +17,8 @@ app = Flask(__name__)
 auth_service = AuthService()
 
 initialize_firebase()
+
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 def auth_required(f):
     @wraps(f)
