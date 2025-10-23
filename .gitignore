@@ -2,3 +2,4 @@ venv
 .env
 firebase-credentials.json
 /__pycache__
+/docs

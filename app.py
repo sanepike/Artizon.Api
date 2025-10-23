@@ -84,6 +84,26 @@ def resend_verification():
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": "Internal server error"}), 500
+    
+@app.route('/auth/profile', methods=['GET'])
+@auth_required
+def get_profile(payload):
+    try:
+        user_id = int(payload['sub'])
+        from models import User
+        with Session(engine) as db:
+            user = db.get(User, user_id)
+            if not user:
+                return jsonify({'error': 'User not found'}), 404
+            profile = {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'user_type': user.user_type,
+            }
+            return jsonify(profile)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/products/create', methods=['POST'])
