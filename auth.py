@@ -106,10 +106,10 @@ class AuthService:
                     {"sub": str(new_user.id), "type": "email_verification"}
                 )
             
-                try:
-                    send_verification_email(request.email, verification_token)
-                except Exception as e:
-                    print(f"Failed to send verification email: {e}")
+                # try:
+                #     send_verification_email(request.email, verification_token)
+                # except Exception as e:
+                #     print(f"Failed to send verification email: {e}")
 
             
                 access_token = create_access_token(
@@ -126,16 +126,6 @@ class AuthService:
         except Exception as e:
             print(f"Signup error: {str(e)}")
             raise Exception("An error occurred during signup")
-
-    
-        verification_token = create_access_token(
-            {"sub": str(new_user.id), "type": "email_verification"}
-        )
-    
-        try:
-            send_verification_email(request.email, verification_token)
-        except Exception as e:
-            print(f"Failed to send verification email: {e}")
 
         access_token = create_access_token(
             {"sub": str(new_user.id), "type": "access"}
@@ -216,7 +206,7 @@ class AuthService:
                     {"sub": user_id, "type": "email_verification"}
                 )
 
-                send_verification_email(user.email, verification_token)
+                # send_verification_email(user.email, verification_token)
                 return {"message": "Verification email sent successfully"}
         except ValueError as ve:
             raise ve
