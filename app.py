@@ -19,7 +19,7 @@ auth_service = AuthService()
 
 initialize_firebase()
 
-CORS(app, resources={r"/*": {"origins": "https://artizon-ui.onrender.com"}})
+CORS(app, resources={r"/*": {"origins": ["https://artizon-ui.onrender.com", "http://localhost:3000"]}})
 
 def auth_required(f):
     @wraps(f)
@@ -169,6 +169,22 @@ def get_my_products(payload):
             result = product_service.get_my_products(user_id, request_data)
             
         return jsonify(result.dict())
+    except Exception as e:
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/products/<int:product_id>', methods=['DELETE'])
+@auth_required
+def delete_product(payload, product_id):
+    try:
+        user_id = int(payload['sub'])
+        
+        with Session(engine) as db:
+            product_service = ProductService(db)
+            product_service.delete_product(product_id, user_id)
+            
+        return jsonify({"message": "Product deleted successfully"}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": "Internal server error"}), 500
 

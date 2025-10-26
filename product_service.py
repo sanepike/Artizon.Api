@@ -145,3 +145,17 @@ class ProductService:
             page=request.page,
             total_pages=total_pages
         )
+
+    def delete_product(self, product_id: int, owner_id: int) -> None:
+        """Delete a product. Only the owner can delete their product."""
+        product = self.db.get(Product, product_id)
+        
+        if not product:
+            raise ValueError(f'Product with ID {product_id} not found')
+        
+        if product.owner_id != owner_id:
+            raise ValueError('You do not have permission to delete this product')
+        
+        # Delete will cascade to ProductImage due to relationship config
+        self.db.delete(product)
+        self.db.commit()
